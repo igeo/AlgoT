@@ -22,22 +22,40 @@ template <typename T> void merge_two_using_workspace(vector<T>& A,
 {
     size_t b3 = b2 - (e1 - b1); // starting of destitation index
     size_t i1 = b1, i2 = b2, i3 = b3;
+    // TODO avoid swapping in this function
+    //const T buf = A[i3]; // create a hole in destination array to avoid swapping
     while(i1 < e1 && i2 < e2)
         if(A[i1] < A[i2])
+        {
+            //A[i3] = A[i1]
+            //A[i1++] = A[++i3];
             swap(A[i3++], A[i1++]);
+        }
         else
+        {
+            //A[i3] = A[i2]
+            //A[i2++] = A[++i3];
             swap(A[i3++], A[i2++]);
+	}
     while(i1 < e1)
         swap(A[i3++], A[i1++]);
     // since a2 is inplace,  no need to copy left over
 }
 
+// swap content of  A[b:e] and A[w:] 
 template <typename T> void swap_range(vector<T>& A,
         const size_t b, const size_t e, const size_t w)
 {
+    auto& W = A; // give A another name
     size_t i1 = b, i2 = w;
+    const T buf = A[w]; // make a whole, avoid swapping of each elements
     while(i1 < e)
-        swap(A[i1++], A[i2++]);
+    {
+        A[i2] = A[i1];
+        A[i1++] = A[++i2];
+    }
+    A[i2] = A[i1];
+    A[i1] = buf;
 }
 
 
@@ -148,6 +166,13 @@ int main()
        DataType::print_stat();
    else
        cout << "failed" << endl;
+
+   vector<int> T;
+   for(size_t i = 0; i < 12; ++i)
+       T.push_back(i);
+   cout << T << endl;
+   swap_range(T,0,2, 6);
+   cout << T << endl;
 
    return 0;
 }
