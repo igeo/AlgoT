@@ -48,8 +48,8 @@ template <typename T> void swap_range(vector<T>& A,
 {
     auto& W = A; // give A another name
     size_t i1 = b, i2 = w;
-    const T buf = A[w]; // make a whole, avoid swapping of each elements
-    while(i1 < e)
+    const T buf = A[i2]; // make a whole, avoid swapping of each elements
+    while(i1 < e - 1)
     {
         A[i2] = A[i1];
         A[i1++] = A[++i2];
