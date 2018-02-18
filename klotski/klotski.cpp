@@ -21,8 +21,8 @@ struct State : public std::vector<std::string>
     "VKKV",
     "vKKv",
     "VHhV",
-    "v  v",
-    "PPPP"}) {};
+    "vPPv",
+    "P  P"}) {};
    State(const std::vector<std::string>&  s) : std::vector<std::string>::vector(s) {};
          char& L(char x, char y)       { return x-1 < 0 ? out : (*this)[y][x-1]; } // left
    const char& L(char x, char y) const { return x-1 < 0 ? out : (*this)[y][x-1]; } 
@@ -334,9 +334,9 @@ int main()
     "KK v",
     "PPPP"});
 
-    s.print();
 
     s = State();
+    s.print();
 
     std::vector<std::vector<State>> progress; // each vector is a step
     progress.emplace_back(std::vector<State>(1, s));
@@ -344,7 +344,7 @@ int main()
 
     for(size_t i = 0; i < 300; ++i)
     {
-        std::cout << "==== Running step # " << i + 1 << " ====" << std::endl;
+        if(debug) std::cout << "==== Running step # " << i + 1 << " ====" << std::endl;
         progress.emplace_back(std::vector<State>());
         auto& next = progress.back();
         const auto& now = progress[i];
@@ -367,14 +367,21 @@ int main()
                 {
                    std::cout << "** WON at step " << i+1 << std::endl;
                    m.printRepr();
+                   int N = 0;
+                   for(const auto& v : progress)
+                       N += v.size();
+                   std::cout << "total serched size " << N << std::endl;
                    exit(0);
                 }
             }
             //std::cout << "^^^" << std::endl;
         }
-        std::cout << "==== total leafs " << next.size() << " ====" << std::endl;
+        if(debug) std::cout << "==== total leafs " << next.size() << " ====" << std::endl;
         if(next.empty())
+        {
+            std::cout << "did not find solution after step " << i+1 << std::endl;
             break;
+        }
     }
     return 0;
 }
