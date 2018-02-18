@@ -64,6 +64,8 @@ std::vector<std::pair<char,char>> State::holes() const
 
 }
 
+bool debug = false;
+
 std::vector<State> State::moves() const
 {
     //std::cout << "line:" << __LINE__ << std::endl;
@@ -85,6 +87,7 @@ std::vector<State> State::moves() const
             State s = *this;
             std::swap(s[y][x], s[y-1][x]);
             ret.emplace_back(s);
+            if(debug) std::cout << "P down" << std::endl;
         }
         else
         {
@@ -95,6 +98,7 @@ std::vector<State> State::moves() const
                std::swap(s[y][x], s[y-1][x]);
                std::swap(s[y-2][x], s[y-1][x]);
                ret.emplace_back(s);
+            if(debug) std::cout << "V down" << std::endl;
             }
         }
 
@@ -104,6 +108,7 @@ std::vector<State> State::moves() const
             State s = *this;
             std::swap(s[y][x], s[y+1][x]);
             ret.emplace_back(s);
+            if(debug) std::cout << "P up" << std::endl;
         }
         else
         {
@@ -113,6 +118,7 @@ std::vector<State> State::moves() const
                std::swap(s[y][x], s[y+1][x]);
                std::swap(s[y+2][x], s[y+1][x]);
                ret.emplace_back(s);
+            if(debug) std::cout << "V up" << std::endl;
             }
         }
 
@@ -122,6 +128,7 @@ std::vector<State> State::moves() const
             State s = *this;
             s.swapWith(x,y, 'l', 1);
             ret.emplace_back(s);
+            if(debug) std::cout << "P r" << std::endl;
         }
         else
         {
@@ -131,6 +138,7 @@ std::vector<State> State::moves() const
                s.swapWith(x,y, 'l', 1);
                s.swapWith(x-1,y, 'l', 1);
                ret.emplace_back(s);
+            if(debug) std::cout << "H r" << std::endl;
             }
         }
 
@@ -140,6 +148,7 @@ std::vector<State> State::moves() const
             State s = *this;
             s.swapWith(x,y, 'r', 1);
             ret.emplace_back(s);
+            if(debug) std::cout << "P l" << std::endl;
         }
         else
         {
@@ -149,6 +158,7 @@ std::vector<State> State::moves() const
                s.swapWith(x,y, 'r', 1);
                s.swapWith(x+1,y, 'r', 1);
                ret.emplace_back(s);
+            if(debug) std::cout << "H l" << std::endl;
             }
         }
     }
@@ -166,6 +176,7 @@ std::vector<State> State::moves() const
            s.swapWith(x1,y, 'u', 2);
            s.swapWith(x1,y-1, 'u', 2);
            ret.emplace_back(s);
+            if(debug) std::cout << "K down" << std::endl;
         }
         if(D(x1,y) == 'K' && D(x2,y) == 'K')
         {
@@ -173,18 +184,21 @@ std::vector<State> State::moves() const
            s.swapWith(x1,y, 'd', 2);
            s.swapWith(x1,y+1, 'd', 2);
            ret.emplace_back(s);
+            if(debug) std::cout << "K up" << std::endl;
         }
         if(U(x1,y) == 'H')
         {
            State s = *this;
            s.swapWith(x1,y, 'u', 2);
            ret.emplace_back(s);
+            if(debug) std::cout << "H down" << std::endl;
         }
         if(D(x1,y) == 'H')
         {
            State s = *this;
            s.swapWith(x1,y, 'd', 2);
            ret.emplace_back(s);
+            if(debug) std::cout << "H up" << std::endl;
         }
 
     }
@@ -201,13 +215,15 @@ std::vector<State> State::moves() const
            s.swapWith(x,y1, 'l', 2);
            s.swapWith(x-1,y1, 'l', 2);
            ret.emplace_back(s);
+            if(debug) std::cout << "K r" << std::endl;
         }
         if(R(x,y1) == 'K' && R(x,y2) == 'K')
         {
            State s = *this;
-           s.swapWith(x,y1, 'd', 2);
-           s.swapWith(x+1,y1, 'd', 2);
+           s.swapWith(x,y1, 'r', 2);
+           s.swapWith(x+1,y1, 'r', 2);
            ret.emplace_back(s);
+            if(debug) std::cout << "K r" << std::endl;
         }
         if(L(x,y1) == 'V')
         {
@@ -326,7 +342,7 @@ int main()
     progress.emplace_back(std::vector<State>(1, s));
     std::unordered_set<std::string> seen;
 
-    for(size_t i = 0; i < 100; ++i)
+    for(size_t i = 0; i < 300; ++i)
     {
         std::cout << "==== Running step # " << i + 1 << " ====" << std::endl;
         progress.emplace_back(std::vector<State>());
@@ -341,8 +357,8 @@ int main()
                 std::string dig;
                 for(auto i : ROWs)
                     dig += m[i];
-                m.printRepr();
-                std::cout << "diguest " << dig << std::endl;
+                //m.printRepr();
+                //std::cout << "diguest " << dig << std::endl;
                 if(seen.count(dig))
                     continue;
                 seen.emplace(dig);
@@ -357,6 +373,8 @@ int main()
             //std::cout << "^^^" << std::endl;
         }
         std::cout << "==== total leafs " << next.size() << " ====" << std::endl;
+        if(next.empty())
+            break;
     }
     return 0;
 }
