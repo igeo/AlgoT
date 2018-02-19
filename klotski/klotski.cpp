@@ -1,22 +1,24 @@
 // https://zh.wikipedia.org/zh-cn/%E8%8F%AF%E5%AE%B9%E9%81%93_(%E9%81%8A%E6%88%B2)
 // http://simonsays-tw.com/web/Klotski/Klotski.html
-// 
+// http://blog.csdn.net/mu399/article/details/78499524
 
 #include <algorithm>
 #include <iostream>
 #include <unordered_set>
+#include <chrono>
 
 #define ROWs {0,1,2,3,4}
 #define COLs {0,1,2,3}
 
-struct State : public std::vector<std::string>
-{
+/// Statue represnt the status of the klotski board
 // 4 K means the King
 // V
 // v  means vertical   knight
 // Hh means horizontal knight
 // P is pawn
 // space is empty
+struct State : public std::vector<std::string>
+{
    State() : std::vector<std::string>({
     "VKKV",
     "vKKv",
@@ -43,9 +45,19 @@ struct State : public std::vector<std::string>
    std::vector<std::pair<char,char>> holes() const; // hole position
    std::vector<State> moves() const;
    State getMirror() const;
+   std::string getHashable() const;
    static char out;
 };
    char State::out = '@';
+
+
+std::string State::getHashable() const
+{
+    std::string dig;
+    for(auto i : ROWs)
+        dig += this->at(i);
+    return dig;
+}
 
 std::vector<std::pair<char,char>> State::holes() const
 {
@@ -65,6 +77,24 @@ std::vector<std::pair<char,char>> State::holes() const
 }
 
 bool debug = false;
+
+
+State State::getMirror() const
+{
+    auto m = *this;
+    for(auto y : ROWs)
+    {
+        for(char x : {0,1})
+            std::swap(m.C(x,y), m.C(3-x,y));
+        size_t pos = 0;
+        while ((pos = m[y].find("hH", pos)) != std::string::npos) {
+             m[y].replace(pos, 2, "Hh");
+             pos += 2;
+        }
+    }
+
+    return m;            
+}
 
 std::vector<State> State::moves() const
 {
@@ -319,6 +349,7 @@ void State::print() const
 
 int main()
 {
+    /*
     State test ({
     "HhV ",
     "Hhv ",
@@ -333,10 +364,12 @@ int main()
     "KK V",
     "KK v",
     "PPPP"});
+    */
 
-
-    s = State();
+    State s = State();
     s.print();
+
+    auto start = std::chrono::system_clock::now();
 
     std::vector<std::vector<State>> progress; // each vector is a step
     progress.emplace_back(std::vector<State>(1, s));
@@ -354,23 +387,25 @@ int main()
             auto ms = p.moves(); // what is poositble next move
             for(const auto& m : ms)
             {
-                std::string dig;
-                for(auto i : ROWs)
-                    dig += m[i];
                 //m.printRepr();
                 //std::cout << "diguest " << dig << std::endl;
-                if(seen.count(dig))
+                if(seen.count(m.getHashable()) || seen.count(m.getMirror().getHashable()))
                     continue;
-                seen.emplace(dig);
+
+                seen.emplace(m.getHashable());
                 next.emplace_back(m);
                 if(m.hasWon())
                 {
-                   std::cout << "** WON at step " << i+1 << std::endl;
+                   std::cout << "*** Solved at step " << i+1 << std::endl;
                    m.printRepr();
                    int N = 0;
                    for(const auto& v : progress)
                        N += v.size();
                    std::cout << "total serched size " << N << std::endl;
+                    auto end = std::chrono::system_clock::now();
+                    std::chrono::duration<double> elapsed_seconds = end-start;
+                    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+                    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
                    exit(0);
                 }
             }
