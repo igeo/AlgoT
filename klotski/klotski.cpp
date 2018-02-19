@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <unordered_set>
+#include <map>
 #include <chrono>
 
 #define ROWs {0,1,2,3,4}
@@ -328,14 +329,27 @@ void State::swapWith(char x, char y, char dir, char size) // move pices on step
     }
 }
 
+std::string colorfy(const char c)
+{
+    const std::map<char,std::string> cm{
+        {' ', u8"\u001b[40m"}, // black space 
+        {'k', u8"\u001b[41m"}, // red king
+        {'h', u8"\u001b[42m"}, // green H
+        {'v', u8"\u001b[44m"}, // blue V
+        {'p', u8"\u001b[46m"}}; // Cyan P
+
+    return cm.at(tolower(c)) + c;
+}
+
 void State::printRepr() const
 {
+    const std::string n = u8"\u001b[0m"; // back to normal color
     std::cout << std::endl;
    for(char y : ROWs) // process each row
    {
        for(char x : COLs)
           std::cout << C(x,y); 
-       std::cout << "|"<< std::endl;
+       std::cout << '|' << std::endl;
    }
 }
 void State::print() const
@@ -377,6 +391,73 @@ void State::print() const
    std::cout << ' ' << std::string(4*(hs+1), '-') << std::endl;
 }
 
+void back_trace(const std::vector<std::vector<std::pair<State,size_t>>>& progress)
+{
+    std::vector<State> solution;
+    State s;// = progress.back().back().first;
+    size_t idx= progress.back().size()-1;
+    progress.at(0).at(0).first;
+    for(int depth = progress.size() - 1; depth >= 0; --depth)
+    {
+        const auto& front = progress.at(depth);
+        const auto& node = front.at(idx);
+        solution.push_back(node.first);
+        idx = node.second;
+    }
+    std::reverse(solution.begin(), solution.end());
+    std::cout << "solution:  " << std::endl;
+    for(size_t i = 0; i < solution.size(); ++i)
+    {
+        //std::cout << "\t step " << i << std::endl;
+        //solution[i].print();
+    }
+}
+
+bool solve(const State& start)
+{
+    std::vector<std::vector<std::pair<State,size_t>>> progress; // each vector is a step, index is parent location
+    progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
+    std::unordered_set<std::string> seen;
+
+    for(size_t i = 0; i < 300; ++i)
+    {
+        if(debug) std::cout << "==== Running step # " << i + 1 << " ====" << std::endl;
+        progress.emplace_back(std::vector<std::pair<State,size_t>>());
+        auto& next = progress.back();  // new depth to explore
+        const auto& current = progress[i]; // current depth
+        for(size_t leaf_idx = 0; leaf_idx < current.size(); ++leaf_idx) // loop all current leafs 
+        {
+            auto ms = current[leaf_idx].first.moves(); // what is poositble next move
+            for(const auto& m : ms)
+            {
+                if(seen.count(m.getHashable()) || seen.count(m.getMirror().getHashable()))
+                    continue; // donot loop
+
+                seen.emplace(m.getHashable());
+                next.emplace_back(std::make_pair(m, leaf_idx));
+                if(m.hasWon())
+                {
+                    back_trace(progress);
+                   std::cout << "*** Solved at step " << i+1 << std::endl;
+                   m.printRepr();
+                   int N = 0;
+                   for(const auto& v : progress)
+                       N += v.size();
+                   std::cout << "total serched size " << N << std::endl;
+                   return true;
+                }
+            }
+        }
+        if(debug) std::cout << "==== total leafs " << next.size() << " ====" << std::endl;
+        if(next.empty())
+        {
+            std::cout << "did not find solution after step " << i+1 << std::endl;
+            break;
+        }
+    }
+    return false;
+}
+
 int main()
 {
     State t1 ({
@@ -394,53 +475,22 @@ int main()
     "KK v",
     "PPPP"});
 
+    State t3 ({ // unsoverable
+    "VKKV",
+    "vKKv",
+    "VVPV",
+    "vvPv",
+    "P  P"});
+
     State s = State();
+    //s = t3;
     s.print();
-
     auto start = std::chrono::system_clock::now();
+    solve(s);
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
+    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 
-    std::vector<std::vector<State>> progress; // each vector is a step
-    progress.emplace_back(std::vector<State>(1, s));
-    std::unordered_set<std::string> seen;
-
-    for(size_t i = 0; i < 300; ++i)
-    {
-        if(debug) std::cout << "==== Running step # " << i + 1 << " ====" << std::endl;
-        progress.emplace_back(std::vector<State>());
-        auto& next = progress.back();
-        const auto& now = progress[i];
-        for(const auto& p : now) // loop all current leafs 
-        {
-            auto ms = p.moves(); // what is poositble next move
-            for(const auto& m : ms)
-            {
-                if(seen.count(m.getHashable()) || seen.count(m.getMirror().getHashable()))
-                    continue;
-
-                seen.emplace(m.getHashable());
-                next.emplace_back(m);
-                if(m.hasWon())
-                {
-                   std::cout << "*** Solved at step " << i+1 << std::endl;
-                   m.printRepr();
-                   int N = 0;
-                   for(const auto& v : progress)
-                       N += v.size();
-                   std::cout << "total serched size " << N << std::endl;
-                    auto end = std::chrono::system_clock::now();
-                    std::chrono::duration<double> elapsed_seconds = end-start;
-                    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
-                    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-                   exit(0);
-                }
-            }
-        }
-        if(debug) std::cout << "==== total leafs " << next.size() << " ====" << std::endl;
-        if(next.empty())
-        {
-            std::cout << "did not find solution after step " << i+1 << std::endl;
-            break;
-        }
-    }
     return 0;
 }
