@@ -75,14 +75,14 @@ struct State : public StateBase_AA
 {
    State() : StateBase_AA(){};
 #endif
-         char& L(char x, char y)       { return x-1 < 0 ? out : (*this)[y][x-1]; } // left
-   const char& L(char x, char y) const { return x-1 < 0 ? out : (*this)[y][x-1]; } 
-         char& R(char x, char y)       { return x+1 > 3 ? out : (*this)[y][x+1]; } // right
-   const char& R(char x, char y) const { return x+1 > 3 ? out : (*this)[y][x+1]; }
-         char& U(char x, char y)       { return y-1 < 0 ? out : (*this)[y-1][x]; } // up
-   const char& U(char x, char y) const { return y-1 < 0 ? out : (*this)[y-1][x]; }
-         char& D(char x, char y)       { return y+1 > 4 ? out : (*this)[y+1][x]; } // down
-   const char& D(char x, char y) const { return y+1 > 4 ? out : (*this)[y+1][x]; }
+         char& L(char x, char y)       { if(x<1) return out; return (*this)[y][x-1]; } // left
+   const char& L(char x, char y) const { if(x<1) return out; return (*this)[y][x-1]; } 
+         char& R(char x, char y)       { if(x>2) return out; return (*this)[y][x+1]; } // right
+   const char& R(char x, char y) const { if(x>2) return out; return (*this)[y][x+1]; }
+         char& U(char x, char y)       { if(y<1) return out; return (*this)[y-1][x]; } // up
+   const char& U(char x, char y) const { if(y<1) return out; return (*this)[y-1][x]; }
+         char& D(char x, char y)       { if(y>3) return out; return(*this)[y+1][x]; } // down
+   const char& D(char x, char y) const { if(y>3) return out; return(*this)[y+1][x]; }
          char& C(char x, char y)       { return (*this)[y][x]; } // self 
    const char& C(char x, char y) const { return (*this)[y][x]; }
 
@@ -158,20 +158,17 @@ std::vector<State> State::moves() const
         if(U(x,y) == 'P')
         {
             State s = *this;
-            std::swap(s[y][x], s[y-1][x]);
-            ret.emplace_back(s);
-            if(debug) std::cout << "P down" << std::endl;
+            s.swapWith(x,y, 'u', 1);
+            ret.emplace_back(s); // P down
         }
         else
         {
-            //if((*this)[y-1][x] == 'v')
             if(U(x,y) == 'v')
             {
                State s = *this;
-               std::swap(s[y][x], s[y-1][x]);
-               std::swap(s[y-2][x], s[y-1][x]);
-               ret.emplace_back(s);
-            if(debug) std::cout << "V down" << std::endl;
+               s.swapWith(x,y, 'u', 1);
+               s.swapWith(x,y-1, 'u', 1);
+               ret.emplace_back(s); // V down
             }
         }
 
@@ -179,19 +176,17 @@ std::vector<State> State::moves() const
         if(D(x,y) == 'P')
         {
             State s = *this;
-            std::swap(s[y][x], s[y+1][x]);
-            ret.emplace_back(s);
-            if(debug) std::cout << "P up" << std::endl;
+            s.swapWith(x,y, 'd', 1);
+            ret.emplace_back(s); // P up
         }
         else
         {
             if(D(x,y) == 'V')
             {
                State s = *this;
-               std::swap(s[y][x], s[y+1][x]);
-               std::swap(s[y+2][x], s[y+1][x]);
-               ret.emplace_back(s);
-            if(debug) std::cout << "V up" << std::endl;
+               s.swapWith(x,y, 'd', 1);
+               s.swapWith(x,y+1, 'd', 1);
+               ret.emplace_back(s); // V up
             }
         }
 
