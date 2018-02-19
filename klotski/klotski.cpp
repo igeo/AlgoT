@@ -20,19 +20,7 @@ struct StateBase_VS : public std::vector<std::string>
     "vPPv",
     "P  P"}) {};
    StateBase_VS(const std::vector<std::string>&  s) : std::vector<std::string>::vector(s) {};
-
-   //void swapWith(char x, char y, char direction, char size); // move on step
-
-   //void print() const;
-   //void printRepr() const;
-   //bool hasWon() const { return (*this)[4][1] == 'K' && (*this)[4][2] == 'K';}
-   //std::vector<std::pair<char,char>> holes() const; // hole position
-   //std::vector<State> moves() const;
-   //State getMirror() const;
-   //std::string getHashable() const;
-   static char out;
 };
-char StateBase_VS::out = '@';
 
 // State based on array of array
 struct StateBase_AA : public std::array<std::array<char,4>,5>
@@ -43,21 +31,15 @@ struct StateBase_AA : public std::array<std::array<char,4>,5>
     {'V', 'H', 'h', 'V'},
     {'v', 'P', 'P', 'v'},
     {'P', ' ', ' ', 'P'}}}) {};
-   //StateBase_VS(const std::vector<std::string>&  s) : std::vector<std::string>::vector(s) {};
-
-   //void swapWith(char x, char y, char direction, char size); // move on step
-
-   //void print() const;
-   //void printRepr() const;
-   //bool hasWon() const { return (*this)[4][1] == 'K' && (*this)[4][2] == 'K';}
-   //std::vector<std::pair<char,char>> holes() const; // hole position
-   //std::vector<State> moves() const;
-   //State getMirror() const;
-   //std::string getHashable() const;
-   static char out;
+   StateBase_AA(const std::vector<std::string>&  s);
 };
-char StateBase_AA::out = '@';
 
+StateBase_AA::StateBase_AA(const std::vector<std::string>& s)
+{
+   for(char y : ROWs) // process each row
+       for(char x : COLs)
+          (*this)[y][x] = s.at(y).at(x); 
+}
 
 /// Statue represnt the status of the klotski board
 // 4 K means the King
@@ -66,14 +48,16 @@ char StateBase_AA::out = '@';
 // Hh means horizontal knight
 // P is pawn
 // space is empty
-#if 1
+#if 0
 struct State : public StateBase_VS
 {
    State() : StateBase_VS(){};
+   State(const std::vector<std::string>&  s) : StateBase_VS(s) {};
 #else
 struct State : public StateBase_AA
 {
    State() : StateBase_AA(){};
+   State(const std::vector<std::string>&  s) : StateBase_AA(s) {};
 #endif
          char& L(char x, char y)       { if(x<1) return out; return (*this)[y][x-1]; } // left
    const char& L(char x, char y) const { if(x<1) return out; return (*this)[y][x-1]; } 
@@ -95,7 +79,11 @@ struct State : public StateBase_AA
    std::vector<State> moves() const;
    State getMirror() const;
    std::string getHashable() const;
+
+   static char out; // to avoid handling of out of range
 };
+char State::out = '@';
+
 
 
 std::string State::getHashable() const
@@ -391,22 +379,20 @@ void State::print() const
 
 int main()
 {
-    /*
-    State test ({
+    State t1 ({
     "HhV ",
     "Hhv ",
     "VKKV",
     "vKKv",
     "PPPP"});
-    test.moves();
+    t1.moves();
 
-    State s ({
+    State t2 ({
     "VHhV",
     "vHhv",
     "KK V",
     "KK v",
     "PPPP"});
-    */
 
     State s = State();
     s.print();
@@ -425,12 +411,9 @@ int main()
         const auto& now = progress[i];
         for(const auto& p : now) // loop all current leafs 
         {
-            //p.printRepr(); std::cout << "...==" << std::endl;
             auto ms = p.moves(); // what is poositble next move
             for(const auto& m : ms)
             {
-                //m.printRepr();
-                //std::cout << "diguest " << dig << std::endl;
                 if(seen.count(m.getHashable()) || seen.count(m.getMirror().getHashable()))
                     continue;
 
@@ -451,7 +434,6 @@ int main()
                    exit(0);
                 }
             }
-            //std::cout << "^^^" << std::endl;
         }
         if(debug) std::cout << "==== total leafs " << next.size() << " ====" << std::endl;
         if(next.empty())
