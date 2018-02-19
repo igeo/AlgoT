@@ -10,6 +10,55 @@
 #define ROWs {0,1,2,3,4}
 #define COLs {0,1,2,3}
 
+// use vector<sting> to represnt state
+struct StateBase_VS : public std::vector<std::string>
+{
+   StateBase_VS() : std::vector<std::string>({
+    "VKKV",
+    "vKKv",
+    "VHhV",
+    "vPPv",
+    "P  P"}) {};
+   StateBase_VS(const std::vector<std::string>&  s) : std::vector<std::string>::vector(s) {};
+
+   //void swapWith(char x, char y, char direction, char size); // move on step
+
+   //void print() const;
+   //void printRepr() const;
+   //bool hasWon() const { return (*this)[4][1] == 'K' && (*this)[4][2] == 'K';}
+   //std::vector<std::pair<char,char>> holes() const; // hole position
+   //std::vector<State> moves() const;
+   //State getMirror() const;
+   //std::string getHashable() const;
+   static char out;
+};
+char StateBase_VS::out = '@';
+
+// State based on array of array
+struct StateBase_AA : public std::array<std::array<char,4>,5>
+{
+   StateBase_AA() : std::array<std::array<char,4>,5>({{
+    {'V', 'K', 'K', 'V'},
+    {'v', 'K', 'K', 'v'},
+    {'V', 'H', 'h', 'V'},
+    {'v', 'P', 'P', 'v'},
+    {'P', ' ', ' ', 'P'}}}) {};
+   //StateBase_VS(const std::vector<std::string>&  s) : std::vector<std::string>::vector(s) {};
+
+   //void swapWith(char x, char y, char direction, char size); // move on step
+
+   //void print() const;
+   //void printRepr() const;
+   //bool hasWon() const { return (*this)[4][1] == 'K' && (*this)[4][2] == 'K';}
+   //std::vector<std::pair<char,char>> holes() const; // hole position
+   //std::vector<State> moves() const;
+   //State getMirror() const;
+   //std::string getHashable() const;
+   static char out;
+};
+char StateBase_AA::out = '@';
+
+
 /// Statue represnt the status of the klotski board
 // 4 K means the King
 // V
@@ -17,15 +66,15 @@
 // Hh means horizontal knight
 // P is pawn
 // space is empty
-struct State : public std::vector<std::string>
+#if 1
+struct State : public StateBase_VS
 {
-   State() : std::vector<std::string>({
-    "VKKV",
-    "vKKv",
-    "VHhV",
-    "vPPv",
-    "P  P"}) {};
-   State(const std::vector<std::string>&  s) : std::vector<std::string>::vector(s) {};
+   State() : StateBase_VS(){};
+#else
+struct State : public StateBase_AA
+{
+   State() : StateBase_AA(){};
+#endif
          char& L(char x, char y)       { return x-1 < 0 ? out : (*this)[y][x-1]; } // left
    const char& L(char x, char y) const { return x-1 < 0 ? out : (*this)[y][x-1]; } 
          char& R(char x, char y)       { return x+1 > 3 ? out : (*this)[y][x+1]; } // right
@@ -46,16 +95,15 @@ struct State : public std::vector<std::string>
    std::vector<State> moves() const;
    State getMirror() const;
    std::string getHashable() const;
-   static char out;
 };
-   char State::out = '@';
 
 
 std::string State::getHashable() const
 {
-    std::string dig;
-    for(auto i : ROWs)
-        dig += this->at(i);
+    std::string dig(20, ' ');
+    for(auto y : ROWs)
+        for(auto x : COLs)
+        dig[x+y*4] += C(x,y);
     return dig;
 }
 
@@ -68,10 +116,7 @@ std::vector<std::pair<char,char>> State::holes() const
            {
                ret.emplace_back(std::make_pair(y, x));
                if(ret.size() == 2)
-               {
-                   //std::cout << "hole: " << int(ret[0].first) << int(ret[0].second) << int(ret[1].first) << int(ret[1].second) << std::endl;
                    return ret;
-               }
            }
 
 }
@@ -87,12 +132,10 @@ State State::getMirror() const
         for(char x : {0,1})
             std::swap(m.C(x,y), m.C(3-x,y));
         size_t pos = 0;
-        while ((pos = m[y].find("hH", pos)) != std::string::npos) {
-             m[y].replace(pos, 2, "Hh");
-             pos += 2;
-        }
+        for(char x : {1, 2, 3})
+            if(m.C(x,y) == 'H')
+               m.swapWith(x,y, 'l', 1);
     }
-
     return m;            
 }
 
@@ -306,7 +349,11 @@ void State::printRepr() const
 {
     std::cout << std::endl;
    for(char y : ROWs) // process each row
-       std::cout << (*this)[y] << "|"<< std::endl;
+   {
+       for(char x : COLs)
+          std::cout << C(x,y); 
+       std::cout << "|"<< std::endl;
+   }
 }
 void State::print() const
 {
