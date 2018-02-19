@@ -1,12 +1,14 @@
 // https://zh.wikipedia.org/zh-cn/%E8%8F%AF%E5%AE%B9%E9%81%93_(%E9%81%8A%E6%88%B2)
 // http://simonsays-tw.com/web/Klotski/Klotski.html
 // http://blog.csdn.net/mu399/article/details/78499524
+// http://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
 
 #include <algorithm>
 #include <iostream>
 #include <unordered_set>
 #include <map>
 #include <chrono>
+#include  <cstring>
 
 #define ROWs {0,1,2,3,4}
 #define COLs {0,1,2,3}
@@ -79,20 +81,41 @@ struct State : public StateBase_AA
    std::vector<std::pair<char,char>> holes() const; // hole position
    std::vector<State> moves() const;
    State getMirror() const;
-   std::string getHashable() const;
+   const unsigned long long getHashableL() const;
+   const std::string getHashable() const;
 
    static char out; // to avoid handling of out of range
 };
 char State::out = '@';
 
+std::map<char, unsigned long long> coding{{
+    {' ', 0x0},
+    {'K', 0x1},
+    {'H', 0x2},
+    {'h', 0x3},
+    {'V', 0x4},
+    {'v', 0x5},
+    {'P', 0x6}}};
 
 
-std::string State::getHashable() const
+const unsigned long long State::getHashableL() const
+{
+    unsigned long long buf = 0;
+    for(auto y : ROWs)
+        for(auto x : COLs)
+        {
+            buf <<= 3;
+            buf |= coding.at(C(x,y));
+        }
+    return buf;
+}
+
+const std::string State::getHashable() const
 {
     std::string dig(20, ' ');
     for(auto y : ROWs)
         for(auto x : COLs)
-        dig[x+y*4] += C(x,y);
+            dig[x+y*4] = C(x,y);
     return dig;
 }
 
@@ -101,13 +124,13 @@ std::vector<std::pair<char,char>> State::holes() const
     std::vector<std::pair<char,char>> ret;
     for(char y : ROWs)
        for(char x : COLs) 
-           if((*this)[y][x] == ' ')
+           if(C(x,y) == ' ')
            {
                ret.emplace_back(std::make_pair(y, x));
-               if(ret.size() == 2)
-                   return ret;
+               //if(ret.size() == 2) // early return
+               //    return ret;
            }
-
+    return ret;
 }
 
 bool debug = false;
@@ -417,6 +440,7 @@ bool solve(const State& start)
 {
     std::vector<std::vector<std::pair<State,size_t>>> progress; // each vector is a step, index is parent location
     progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
+    std::unordered_set<unsigned long long> seenL;
     std::unordered_set<std::string> seen;
 
     for(size_t i = 0; i < 300; ++i)
@@ -424,6 +448,7 @@ bool solve(const State& start)
         if(debug) std::cout << "==== Running step # " << i + 1 << " ====" << std::endl;
         progress.emplace_back(std::vector<std::pair<State,size_t>>());
         auto& next = progress.back();  // new depth to explore
+        next.reserve(300);
         const auto& current = progress[i]; // current depth
         for(size_t leaf_idx = 0; leaf_idx < current.size(); ++leaf_idx) // loop all current leafs 
         {
@@ -484,7 +509,9 @@ int main()
 
     State s = State();
     //s = t3;
+    std::cout << std::oct << s.getHashable() << std::endl;;
     s.print();
+    s.printRepr();
     auto start = std::chrono::system_clock::now();
     solve(s);
     auto end = std::chrono::system_clock::now();
