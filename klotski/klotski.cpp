@@ -88,15 +88,6 @@ struct State : public StateBase_AA
 };
 char State::out = '@';
 
-std::map<char, unsigned long long> coding{{
-    {' ', 0x0},
-    {'K', 0x1},
-    {'H', 0x2},
-    {'h', 0x3},
-    {'V', 0x4},
-    {'v', 0x5},
-    {'P', 0x6}}};
-
 
 const unsigned long long State::getHashableL() const
 {
@@ -105,7 +96,29 @@ const unsigned long long State::getHashableL() const
         for(auto x : COLs)
         {
             buf <<= 3;
-            buf |= coding.at(C(x,y));
+            switch(C(x,y)) // switch is much faster than map lookup
+            {
+                case ' ':
+                    buf |= 0x0;
+                    break;
+                case 'K':
+                    buf |= 0x1;
+                    break;
+                case 'H':
+                    buf |= 0x2;
+                    break;
+                case 'h':
+                    buf |= 0x3;
+                    break;
+                case 'V':
+                    buf |= 0x4;
+                    break;
+                case 'v':
+                    buf |= 0x5;
+                    break;
+                case 'P':
+                    buf |= 0x6;
+            }
         }
     return buf;
 }
@@ -153,7 +166,6 @@ State State::getMirror() const
 
 std::vector<State> State::moves() const
 {
-    //std::cout << "line:" << __LINE__ << std::endl;
     std::vector<State> ret;
     const auto hs = holes();
     if(hs.size() != 2)
@@ -440,8 +452,8 @@ bool solve(const State& start)
 {
     std::vector<std::vector<std::pair<State,size_t>>> progress; // each vector is a step, index is parent location
     progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
-    std::unordered_set<unsigned long long> seenL;
-    std::unordered_set<std::string> seen;
+    std::unordered_set<unsigned long long> seen;
+    std::unordered_set<std::string> seenS;
 
     for(size_t i = 0; i < 300; ++i)
     {
@@ -455,10 +467,10 @@ bool solve(const State& start)
             auto ms = current[leaf_idx].first.moves(); // what is poositble next move
             for(const auto& m : ms)
             {
-                if(seen.count(m.getHashable()) || seen.count(m.getMirror().getHashable()))
+                if(seen.count(m.getHashableL()) || seen.count(m.getMirror().getHashableL()))
                     continue; // donot loop
 
-                seen.emplace(m.getHashable());
+                seen.emplace(m.getHashableL());
                 next.emplace_back(std::make_pair(m, leaf_idx));
                 if(m.hasWon())
                 {
@@ -509,7 +521,6 @@ int main()
 
     State s = State();
     //s = t3;
-    std::cout << std::oct << s.getHashable() << std::endl;;
     s.print();
     s.printRepr();
     auto start = std::chrono::system_clock::now();
