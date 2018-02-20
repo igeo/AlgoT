@@ -426,7 +426,7 @@ void State::print() const
    std::cout << ' ' << std::string(4*(hs+1), '-') << std::endl;
 }
 
-void back_trace(const std::vector<std::vector<std::pair<State,size_t>>>& progress)
+std::vector<State> back_trace(const std::vector<std::vector<std::pair<State,size_t>>>& progress)
 {
     std::vector<State> solution;
     State s;// = progress.back().back().first;
@@ -440,15 +440,11 @@ void back_trace(const std::vector<std::vector<std::pair<State,size_t>>>& progres
         idx = node.second;
     }
     std::reverse(solution.begin(), solution.end());
-    std::cout << "solution:  " << std::endl;
-    for(size_t i = 0; i < solution.size(); ++i)
-    {
-        //std::cout << "\t step " << i << std::endl;
-        //solution[i].print();
-    }
+    return solution;
 }
 
-bool solve(const State& start)
+
+std::vector<State> solve(const State& start)
 {
     std::vector<std::vector<std::pair<State,size_t>>> progress; // each vector is a step, index is parent location
     progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
@@ -474,14 +470,13 @@ bool solve(const State& start)
                 next.emplace_back(std::make_pair(m, leaf_idx));
                 if(m.hasWon())
                 {
-                    back_trace(progress);
                    std::cout << "*** Solved at step " << i+1 << std::endl;
                    m.printRepr();
                    int N = 0;
                    for(const auto& v : progress)
                        N += v.size();
                    std::cout << "total serched size " << N << std::endl;
-                   return true;
+                   return back_trace(progress);
                 }
             }
         }
@@ -492,10 +487,10 @@ bool solve(const State& start)
             break;
         }
     }
-    return false;
+    return std::vector<State>();
 }
 
-int main()
+int main(int argc, char** argv)
 {
     State t1 ({
     "HhV ",
@@ -524,11 +519,20 @@ int main()
     s.print();
     s.printRepr();
     auto start = std::chrono::system_clock::now();
-    solve(s);
+    auto solution = solve(s);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end-start;
     std::time_t end_time = std::chrono::system_clock::to_time_t(end);
     std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 
+    if(argc >= 2 && std::string(argv[1]) == "-bt")
+    {
+        std::cout << "solution:  " << std::endl;
+        for(size_t i = 0; i < solution.size(); ++i)
+        {
+            std::cout << " step #" << i << std::endl;
+            solution[i].print();
+        }
+    }
     return 0;
 }
