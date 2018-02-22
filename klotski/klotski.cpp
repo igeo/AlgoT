@@ -3,6 +3,9 @@
 // http://blog.csdn.net/mu399/article/details/78499524
 // http://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
 
+// https://nbickford.wordpress.com/2013/11/13/sliding-block-puzzles-part-4-of-3/#more-371 this give the most conprehenive review I ever seen. 
+// I will check if there is anything he missed.
+
 #include <algorithm>
 #include <iostream>
 #include <unordered_set>
