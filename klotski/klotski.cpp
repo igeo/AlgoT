@@ -79,7 +79,7 @@ struct State : public StateBase_AA
     void print() const;
     void printRepr() const;
     bool hasWon() const { return (*this)[4][1] == 'K' && (*this)[4][2] == 'K';}
-    std::vector<std::pair<char,char>> holes() const; // hole position
+    std::array<std::pair<char,char>,2> holes() const; // hole position
     const std::vector<State>& moves() const;
     State getMirror() const;
     const unsigned long long getHashableL() const;
@@ -98,7 +98,7 @@ const unsigned long long State::getHashableL() const
     for(int i = 0; i < 20; ++i)
     {
         buf <<= 3;
-        switch(*(p++))
+        switch(*p++)
         {
             case ' ':
                 buf |= 0x0;
@@ -134,16 +134,17 @@ const std::string State::getHashable() const
     return dig;
 }
 
-std::vector<std::pair<char,char>> State::holes() const
+std::array<std::pair<char,char>,2> State::holes() const
 {
-    std::vector<std::pair<char,char>> ret;
+    std::array<std::pair<char,char>,2> ret;
+    int count = 0;
     for(char y : ROWs)
         for(char x : COLs)
             if(C(x,y) == ' ')
             {
-                ret.emplace_back(std::make_pair(y, x));
-                //if(ret.size() == 2) // early return
-                //    return ret;
+                ret[count++] = std::make_pair(y, x);
+                if(count > 1)
+                    return ret;
             }
     return ret;
 }
@@ -456,8 +457,13 @@ std::vector<State> solve(const State& start)
 {
     std::vector<std::vector<std::pair<State,size_t>>> progress; // each vector is a step, index is parent location
     progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
+    //std::vector<std::vector<std::pair<unsigned long long,size_t>>> progress; // each vector is a step, index is parent location
+    //progress.emplace_back(std::vector<std::pair<unsigned long long,size_t>>(1, std::make_pair(start.getHashableL(),0)));
     std::unordered_set<unsigned long long> seen;
     std::unordered_set<std::string> seenS;
+
+    progress.reserve(300);
+    seen.rehash(40000);
 
     for(size_t i = 0; i < 300; ++i)
     {
@@ -471,10 +477,10 @@ std::vector<State> solve(const State& start)
             const auto& ms = current[leaf_idx].first.moves(); // what is poositble next move
             for(const auto& m : ms)
             {
-                if(seen.count(m.getHashableL()) || seen.count(m.getMirror().getHashableL()))
+                auto hashable = m.getHashableL();
+                if(!seen.insert(hashable).second || !seen.insert(m.getMirror().getHashableL()).second)
                     continue; // donot loop
 
-                seen.emplace(m.getHashableL());
                 next.emplace_back(std::make_pair(m, leaf_idx));
                 if(m.hasWon())
                 {
