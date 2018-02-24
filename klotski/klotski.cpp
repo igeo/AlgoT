@@ -21,8 +21,8 @@ struct StateBase_VS : public std::vector<std::string>
 {
     StateBase_VS() : std::vector<std::string>(
     {
-        "VKKV",
-        "vKKv",
+        "VKkV",
+        "vkkv",
         "VHhV",
         "vPPv",
         "P  P"}) {};
@@ -33,8 +33,8 @@ struct StateBase_VS : public std::vector<std::string>
 struct StateBase_AA : public std::array<std::array<char,4>,5>
 {
     StateBase_AA() : std::array<std::array<char,4>,5>({{
-            {'V', 'K', 'K', 'V'},
-            {'v', 'K', 'K', 'v'},
+            {'V', 'K', 'k', 'V'},
+            {'v', 'k', 'k', 'v'},
             {'V', 'H', 'h', 'V'},
             {'v', 'P', 'P', 'v'},
             {'P', ' ', ' ', 'P'}}}) {};
@@ -81,7 +81,7 @@ struct State : public StateBase_AA
 
     void print() const;
     void printRepr() const;
-    bool hasWon() const { return (*this)[4][1] == 'K' && (*this)[4][2] == 'K';}
+    bool hasWon() const { return (*this)[4][1] == 'k' && (*this)[4][2] == 'k';}
     std::array<std::pair<char,char>,2> holes() const; // hole position
     const std::vector<State>& moves() const;
     State getMirror() const;
@@ -107,6 +107,7 @@ const unsigned long long State::getHashableL() const
                 buf |= 0x0;
                 break;
             case 'K':
+            case 'k':
                 buf |= 0x1;
                 break;
             case 'H':
@@ -165,6 +166,8 @@ State State::getMirror() const
         size_t pos = 0;
         for(char x : {1, 2, 3})
             if(m.C(x,y) == 'H')
+                m.swapWith(x,y, 'l', 1);
+            else if(m.C(x,y) == 'K')
                 m.swapWith(x,y, 'l', 1);
     }
     return m;
@@ -270,7 +273,7 @@ const std::vector<State>& State::moves() const
         const char x1 = std::min(hs[0].second, hs[1].second);
         const char x2 = x1 + 1;
         // vertical move
-        if(U(x1,y) == 'K' && U(x2,y) == 'K')
+        if(U(x1,y) == 'k' && U(x2,y) == 'k')
         {
             State s = *this;
             s.swapWith(x1,y, 'u', 2);
@@ -278,7 +281,7 @@ const std::vector<State>& State::moves() const
             ret.emplace_back(s);
             if(debug) std::cout << "K down" << std::endl;
         }
-        if(D(x1,y) == 'K' && D(x2,y) == 'K')
+        if(D(x1,y) == 'K' && D(x2,y) == 'k')
         {
             State s = *this;
             s.swapWith(x1,y, 'd', 2);
@@ -309,7 +312,7 @@ const std::vector<State>& State::moves() const
         const char y1 = std::min(hs[0].first, hs[1].first);
         const char y2 = y1 + 1;
         // Horizontal  move
-        if(L(x,y1) == 'K' && L(x,y2) == 'K')
+        if(L(x,y1) == 'k' && L(x,y2) == 'k')
         {
             State s = *this;
             s.swapWith(x,y1, 'l', 2);
@@ -317,7 +320,7 @@ const std::vector<State>& State::moves() const
             ret.emplace_back(s);
             if(debug) std::cout << "K r" << std::endl;
         }
-        if(R(x,y1) == 'K' && R(x,y2) == 'K')
+        if(R(x,y1) == 'K' && R(x,y2) == 'k')
         {
             State s = *this;
             s.swapWith(x,y1, 'r', 2);
@@ -460,8 +463,6 @@ std::vector<State> solve(const State& start)
 {
     std::vector<std::vector<std::pair<State,size_t>>> progress; // each vector is a step, index is parent location
     progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
-    //std::vector<std::vector<std::pair<unsigned long long,size_t>>> progress; // each vector is a step, index is parent location
-    //progress.emplace_back(std::vector<std::pair<unsigned long long,size_t>>(1, std::make_pair(start.getHashableL(),0)));
     std::unordered_set<unsigned long long> seen;
     std::unordered_set<std::string> seenS;
 
@@ -522,8 +523,8 @@ int main(int argc, char** argv)
     {
         "VHhV",
         "vHhv",
-        "KK V",
-        "KK v",
+        "Kk V",
+        "kk v",
         "PPPP"});
 
     State t3 (  // unsoverable
@@ -535,8 +536,16 @@ int main(int argc, char** argv)
         "P  P"
     });
 
+    State t4 (
+    {
+        "VHhV",
+        "vHhv",
+        "PKkV",
+        "Pkkv",
+        "P  P"});
+
     State s = State();
-    //s = t3;
+    //s = t2;
     s.print();
     s.printRepr();
     auto start = std::chrono::system_clock::now();
