@@ -85,7 +85,7 @@ struct State : public StateBase_AA
     std::array<std::pair<char,char>,2> holes() const; // hole position
     const std::vector<State>& moves() const;
     State getMirror() const;
-    const unsigned long long getHashableL() const;
+    const unsigned long getHashableL() const;
     const std::string getHashable() const;
 
     static char out; // to avoid handling of out of range
@@ -93,37 +93,34 @@ struct State : public StateBase_AA
 char State::out = '@';
 
 
-const unsigned long long State::getHashableL() const
+const unsigned long State::getHashableL() const
 {
-    unsigned long long buf = 0;
+    unsigned long buf = 0;
     //for(const auto y : ROWs) for(const auto x : COLs) switch(C(x,y))
     const char* p = (*this).front().data();
     for(int i = 0; i < 20; ++i)
     {
-        buf <<= 3;
         switch(*p++)
         {
             case ' ':
-                buf |= 0x0;
+                buf <<= 3;
+                buf |= 0x6;
                 break;
             case 'K':
-            case 'k':
-                buf |= 0x1;
+                buf <<= 3;
+                buf |= 0x7;
                 break;
             case 'H':
-                buf |= 0x2;
-                break;
-            case 'h':
-                buf |= 0x3;
+                buf <<= 3;
+                buf |= 0x0;
                 break;
             case 'V':
-                buf |= 0x4;
-                break;
-            case 'v':
-                buf |= 0x5;
+                buf <<= 3;
+                buf |= 0x1;
                 break;
             case 'P':
-                buf |= 0x6;
+                buf <<= 3;
+                buf |= 0x2;
         }
     }
     return buf;
@@ -463,8 +460,7 @@ std::vector<State> solve(const State& start)
 {
     std::vector<std::vector<std::pair<State,size_t>>> progress; // each vector is a step, index is parent location
     progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
-    std::unordered_set<unsigned long long> seen;
-    std::unordered_set<std::string> seenS;
+    std::unordered_set<unsigned long> seen;
 
     progress.reserve(300);
     seen.rehash(40000);
