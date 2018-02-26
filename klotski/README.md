@@ -1,7 +1,9 @@
 # Kloski Solver
+Currently my solver takes 11 ms to solver the classic Forget-me-not opening (81/116 par) on a Google Compute Engine f1-micro instance. Callgrind show the solver used 27,873,279 instructions.
+
+![forget-me-not](forget-me-not.png)
 
 ## Reference:
-Currently my solver takes 13 ms to solver the classic 81/116 par openning.
 I found these research after I finished my codes:
   * Ruben Spaans, [Improving sliding-block puzzle solving using meta-level reasoning](
                   http://www.pvv.org/~spaans/master-cs.pdf), Master thesis, 2010
