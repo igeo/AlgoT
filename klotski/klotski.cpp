@@ -3,7 +3,7 @@
 // http://blog.csdn.net/mu399/article/details/78499524
 // http://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
 
-// https://nbickford.wordpress.com/2013/11/13/sliding-block-puzzles-part-4-of-3/#more-371 this give the most conprehenive review I ever seen. 
+// https://nbickford.wordpress.com/2013/11/13/sliding-block-puzzles-part-4-of-3/#more-371 this give the most conprehenive review I ever seen.
 // I will check if there is anything he missed.
 
 #include <algorithm>
@@ -81,7 +81,7 @@ struct State : public StateBase_AA
 
     void print() const;
     void printRepr() const;
-    bool hasWon() const { return (*this)[4][1] == 'k' && (*this)[4][2] == 'k';}
+    bool hasWon() const { return (*this)[4][1] == 'k' && (*this)[4][2] == 'k';} // using C(4,1) will be lower!
     std::array<std::pair<char,char>,2> holes() const; // hole position
     const std::vector<State>& moves() const;
     State getMirror() const;
@@ -93,6 +93,9 @@ struct State : public StateBase_AA
 char State::out = '@';
 
 
+// K and space are 3 bits
+// H V and P are 2 bits
+// total = 3 * 3 + 11 * 2 = 31 bits
 const unsigned long State::getHashableL() const
 {
     unsigned long buf = 0;
@@ -352,25 +355,20 @@ const std::vector<State>& State::moves() const
 // for horizatonal move size in in y+
 void State::swapWith(char x, char y, char dir, char size) // move pices on step
 {
-    char t = 0; // target
     for(char d = 0; d < size; ++d)
         switch (dir)
         {
             case 'u':
-                t = -1;
-                std::swap(C(x+d,y), C(x+d,y+t));
+                std::swap(C(x+d,y), C(x+d,y-1));
                 break;
             case 'd':
-                t = +1;
-                std::swap(C(x+d,y), C(x+d,y+t));
+                std::swap(C(x+d,y), C(x+d,y+1));
                 break;
             case 'l':
-                t = -1;
-                std::swap(C(x,y+d), C(x+t,y+d));
+                std::swap(C(x,y+d), C(x-1,y+d));
                 break;
             case 'r':
-                t = +1;
-                std::swap(C(x,y+d), C(x+t,y+d));
+                std::swap(C(x,y+d), C(x+1,y+d));
                 break;
         }
 }
@@ -455,11 +453,13 @@ std::vector<State> back_trace(const std::vector<std::vector<std::pair<State,size
     return solution;
 }
 
+//#include <sparsehash/dense_hash_set>
 
 std::vector<State> solve(const State& start)
 {
     std::vector<std::vector<std::pair<State,size_t>>> progress; // each vector is a step, index is parent location
     progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
+    //google::dense_hash_set<unsigned long> seen; seen.set_empty_key(0);
     std::unordered_set<unsigned long> seen;
 
     progress.reserve(300);
@@ -477,7 +477,7 @@ std::vector<State> solve(const State& start)
             const auto& ms = current[leaf_idx].first.moves(); // what is poositble next move
             for(const auto& m : ms)
             {
-                auto hashable = m.getHashableL();
+                const auto hashable = m.getHashableL();
                 if(!seen.insert(hashable).second || !seen.insert(m.getMirror().getHashableL()).second)
                     continue; // donot loop
 
@@ -545,7 +545,9 @@ int main(int argc, char** argv)
     s.print();
     s.printRepr();
     auto start = std::chrono::system_clock::now();
-    auto solution = solve(s);
+    std::vector<State> solution;
+    for(size_t i = 0; i < 1; ++i)
+        solution = solve(s);
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end-start;
     std::time_t end_time = std::chrono::system_clock::to_time_t(end);
