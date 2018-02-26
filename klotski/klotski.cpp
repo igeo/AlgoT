@@ -540,8 +540,10 @@ int main(int argc, char** argv)
         "Pkkv",
         "P  P"});
 
+    State t5 ({ "PPPV", "KkVv", "kkvV", " Hhv", " PHh"}); // Feng Hui Lu Zhuan 138 par / 179 par, the most difficult one
+
     State s = State();
-    //s = t2;
+    s = t5;
     s.print();
     s.printRepr();
     auto start = std::chrono::system_clock::now();
