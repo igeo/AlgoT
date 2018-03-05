@@ -10,3 +10,4 @@ I found these research after I finished my codes:
   * Meil Bickford, [Sliding Block Puzzles](https://nbickford.wordpress.com/2013/11/13/sliding-block-puzzles-part-4-of-3), blog
   * Yong Su, [The JavaScript algorithm for solving klotski game](https://github.com/jeantimex/klotski)
   * Memoryboxes, [Android Game](http://happy123.me/blog/2015/03/03/huarongdao)
+  * [ Rumber Klotski game](https://cloud.tencent.com/developer/article/1036257)
