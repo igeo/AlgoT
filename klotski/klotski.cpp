@@ -1,3 +1,9 @@
+#ifdef fail
+#!/usr/bin/env bash
+# make this self runable
+g++ -std=c++11 -O3 -mavx -I/home/shufengbai/projects/sparsehash-c11/ -o main *.cpp && ./main
+exit 0
+#endif
 // https://zh.wikipedia.org/zh-cn/%E8%8F%AF%E5%AE%B9%E9%81%93_(%E9%81%8A%E6%88%B2)
 // http://simonsays-tw.com/web/Klotski/Klotski.html
 // http://blog.csdn.net/mu399/article/details/78499524
