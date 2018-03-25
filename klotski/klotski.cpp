@@ -475,6 +475,7 @@ std::vector<State> solve(const State& start)
     progress.emplace_back(std::vector<std::pair<State,size_t>>(1, std::make_pair(start,0)));
     //google::dense_hash_set<unsigned long> seen; seen.set_empty_key(0);
     std::unordered_set<unsigned long> seen;
+    seen.insert(start.getHashableL());
 
     progress.reserve(300);
     seen.rehash(40000);
