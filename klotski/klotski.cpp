@@ -45,6 +45,7 @@ struct StateBase_AA : public std::array<std::array<char,4>,5>
             {'v', 'P', 'P', 'v'},
             {'P', ' ', ' ', 'P'}}}) {};
     StateBase_AA(const std::vector<std::string>&  s);
+    StateBase_AA(const std::string&  s);
 };
 
 StateBase_AA::StateBase_AA(const std::vector<std::string>& s)
@@ -52,6 +53,12 @@ StateBase_AA::StateBase_AA(const std::vector<std::string>& s)
     for(char y : ROWs) // process each row
         for(char x : COLs)
             (*this)[y][x] = s.at(y).at(x);
+}
+StateBase_AA::StateBase_AA(const std::string& s)
+{
+    for(char y : ROWs) // process each row
+        for(char x : COLs)
+            (*this)[y][x] = s.at(y *4 + x);
 }
 
 /// Statue represnt the status of the klotski board
@@ -71,6 +78,7 @@ struct State : public StateBase_AA
 {
     State() : StateBase_AA() {};
     State(const std::vector<std::string>&  s) : StateBase_AA(s) {};
+    State(const std::string&  s) : StateBase_AA(s) {};
 #endif
     char& L(char x, char y)       { if(x<1) return out; return (*this)[y][x-1]; } // left
     const char& L(char x, char y) const { if(x<1) return out; return (*this)[y][x-1]; }
@@ -547,6 +555,7 @@ int main(int argc, char** argv)
         "P  P"});
 
     State t5 ({ "PPPV", "KkVv", "kkvV", " Hhv", " PHh"}); // Feng Hui Lu Zhuan 138 par / 179 par, the most difficult one
+    State t6("PVVVPvvvHhHhPPKk  kk");
 
     State s = State();
     s = t5;
