@@ -492,8 +492,12 @@ std::vector<State> solve(const State& start)
             for(const auto& m : ms)
             {
                 const auto hashable = m.getHashableL();
-                if(!seen.insert(hashable).second || !seen.insert(m.getMirror().getHashableL()).second)
+                if(!seen.insert(hashable).second)
                     continue; // donot loop
+
+                const auto mirror_hashable = m.getMirror().getHashableL();
+                if(hashable != mirror_hashable && !seen.insert(mirror_hashable).second) // mirror could be the same so it ia added in step above
+                    continue;
 
                 next.emplace_back(std::make_pair(m, leaf_idx));
                 if(m.hasWon())
@@ -556,9 +560,11 @@ int main(int argc, char** argv)
 
     State t5 ({ "PPPV", "KkVv", "kkvV", " Hhv", " PHh"}); // Feng Hui Lu Zhuan 138 par / 179 par, the most difficult one
     State t6("PVVVPvvvHhHhPPKk  kk");
+    State t7("PPPVKkVvkkvV Hhv PHh"); // hardest one
+    State t8("PHhPVKkVvkkvVPPVv  v"); // par 15, symmmetric
 
     State s = State();
-    s = t5;
+    s = t8;
     s.print();
     s.printRepr();
     auto start = std::chrono::system_clock::now();
