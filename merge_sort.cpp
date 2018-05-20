@@ -151,7 +151,7 @@ template <typename T> void quick_sort(vector<T>& A, int s, int e)
     int b = e;
     while ( f < b )
     {
-        while( pivot < A[b] && f < b)
+        while( (pivot < A[b]) && f < b)
             --b;
         if( f == b )
             break;
@@ -168,6 +168,7 @@ template <typename T> void quick_sort(vector<T>& A, int s, int e)
     {
         quick_sort(A, s, b-1);
         quick_sort(A, b+1, e);
+        return;
     }
     if(A[b] < pivot)
     {
@@ -190,7 +191,7 @@ template <typename T> void quick_sort(vector<T>& A)
 
 int main()
 {
-   const int N = 8000;
+   const int N = 80000;
    //srand(std::time(0));
    std::vector<DataType> A(N);
    for (size_t i = 0; i < A.size(); ++i)
