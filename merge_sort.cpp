@@ -129,11 +129,68 @@ template <typename T> void merge_sort(vector<T>& A)
     merge_sort(A, 0, A.size(), B);
 }
 ///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// Quick sort - my exercise //
+
+// s : inclusive
+// e : inclusive
+template <typename T> void quick_sort(vector<T>& A, int s, int e)
+{
+    if ( s >= e ) 
+        return;
+
+     std::random_device r;
+      
+    //std::cerr << "s = " << s << " e = " << e  ;
+     std::default_random_engine e1(r());
+     std::uniform_int_distribution<int> uniform_dist(0, e-s);
+     int d = uniform_dist(e1);
+    T pivot = A[s + d]; 
+    //std::cerr << " p = " << pivot << std::endl; 
+    int f = s;
+    int b = e;
+    while ( f < b )
+    {
+        while( pivot < A[b] && f < b)
+            --b;
+        if( f == b )
+            break;
+        while ( (A[f] < pivot || A[f] == pivot) && f < b)
+            ++f;
+        if(f < b)
+        {
+            std::swap(A[f], A[b]);
+        }
+    }
+    //cout << A << std::endl;
+    //cout << "f = " << f << " b = " << b << std::endl;
+    if(A[b] == pivot)
+    {
+        quick_sort(A, s, b-1);
+        quick_sort(A, b+1, e);
+    }
+    if(A[b] < pivot)
+    {
+        quick_sort(A, s, b);
+        quick_sort(A, b+1, e);
+    }
+    else
+    {
+        quick_sort(A, s, b-1);
+        quick_sort(A, b, e);
+    }
+}
+
+template <typename T> void quick_sort(vector<T>& A)
+{
+    quick_sort(A, 0, A.size()-1);
+}
+
 
 
 int main()
 {
-   const int N = 80000;
+   const int N = 8000;
    //srand(std::time(0));
    std::vector<DataType> A(N);
    for (size_t i = 0; i < A.size(); ++i)
@@ -167,11 +224,24 @@ int main()
    else
        cout << "failed" << endl;
 
+   cout << "My practice quick sort" << endl;
+   auto D = A;
+   quick_sort(D);
+   if(B == D)
+       DataType::print_stat();
+   else
+       cout << "failed" << endl;
+   
+
    vector<int> T;
+   srand(10);
    for(size_t i = 0; i < 12; ++i)
-       T.push_back(i);
+       T.push_back(rand() % 70);
    cout << T << endl;
    swap_range(T,0,2, 6);
+   //T = {50,      52,      55,      83,      34,      27,      49,      81,      14,      8,       89,      97};
+   cout << T << endl;
+   quick_sort(T);
    cout << T << endl;
 
    return 0;
