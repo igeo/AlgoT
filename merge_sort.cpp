@@ -36,15 +36,15 @@ template <typename T> void merge_two_using_workspace(vector<T>& A,
             //A[i3] = A[i2]
             //A[i2++] = A[++i3];
             swap(A[i3++], A[i2++]);
-	}
+        }
     while(i1 < e1)
         swap(A[i3++], A[i1++]);
     // since a2 is inplace,  no need to copy left over
 }
 
-// swap content of  A[b:e] and A[w:] 
+// swap content of  A[b:e] and A[w:]
 template <typename T> void swap_range(vector<T>& A,
-        const size_t b, const size_t e, const size_t w)
+                                      const size_t b, const size_t e, const size_t w)
 {
     auto& W = A; // give A another name
     size_t i1 = b, i2 = w;
@@ -104,7 +104,7 @@ template <typename T> void merge_two(vector<T>& A, const size_t b, const size_t 
     i1 = 0; // iterator for a1
     i2 = m; // iterator for a2
     i3 = b; // iterator for a
-    while(i1 < s && i2 < e) 
+    while(i1 < s && i2 < e)
         A[i3++] = B[i1] < A[i2] ? B[i1++] : A[i2++];
     while(i1 < s)
         A[i3++] = B[i1++];
@@ -136,50 +136,27 @@ template <typename T> void merge_sort(vector<T>& A)
 // e : inclusive
 template <typename T> void quick_sort(vector<T>& A, int s, int e)
 {
-    if ( s >= e ) 
+    if ( s >= e )
         return;
 
-     std::random_device r;
-      
     //std::cerr << "s = " << s << " e = " << e  ;
-     std::default_random_engine e1(r());
-     std::uniform_int_distribution<int> uniform_dist(0, e-s);
-     int d = uniform_dist(e1);
-    T pivot = A[s + d]; 
-    //std::cerr << " p = " << pivot << std::endl; 
-    int f = s;
-    int b = e;
-    while ( f < b )
+    T pivot = A[(s+e)/2];
+    //std::cerr << " p = " << pivot << std::endl;
+    int i = s - 1;
+    int j = e + 1;
+    while (true)
     {
-        while( (pivot < A[b]) && f < b)
-            --b;
-        if( f == b )
+        do { --j ; } while(pivot < A[j]);
+        do { ++i; } while (A[i] < pivot);
+        if(i < j)
+            std::swap(A[i], A[j]);
+        else
             break;
-        while ( (A[f] < pivot || A[f] == pivot) && f < b)
-            ++f;
-        if(f < b)
-        {
-            std::swap(A[f], A[b]);
-        }
     }
     //cout << A << std::endl;
     //cout << "f = " << f << " b = " << b << std::endl;
-    if(A[b] == pivot)
-    {
-        quick_sort(A, s, b-1);
-        quick_sort(A, b+1, e);
-        return;
-    }
-    if(A[b] < pivot)
-    {
-        quick_sort(A, s, b);
-        quick_sort(A, b+1, e);
-    }
-    else
-    {
-        quick_sort(A, s, b-1);
-        quick_sort(A, b, e);
-    }
+    quick_sort(A, s, j);
+    quick_sort(A, j+1, e);
 }
 
 template <typename T> void quick_sort(vector<T>& A)
@@ -187,63 +164,63 @@ template <typename T> void quick_sort(vector<T>& A)
     quick_sort(A, 0, A.size()-1);
 }
 
+///////////////////////////////////////////////////////////////////////
 
 
 int main()
 {
-   const int N = 80000;
-   //srand(std::time(0));
-   std::vector<DataType> A(N);
-   for (size_t i = 0; i < A.size(); ++i)
+    const int N = 80000;
+    //srand(std::time(0));
+    std::vector<DataType> A(N);
+    for (size_t i = 0; i < A.size(); ++i)
         A[i] = rand() % (2 * N);
-        
-   auto B = A;
-   auto C = A;
-   cout << "N = " << N << endl; 
-   //cout << "A = " << A << endl;
-   
-   // baseline using STD algo 
-   DataType::clear_stat();
-   std::sort(B.begin(), B.end());
-   cout << "STL sort" << endl;
-   DataType::print_stat();
 
-   DataType::clear_stat();
-   merge_sort_inplace(C);
-   cout << "My Inplace Merge Sort without Addtional Memory" << endl;
-   if(B == C)
-       DataType::print_stat();
-   else
-       cout << "failed" << endl;
+    auto B = A;
+    auto C = A;
+    cout << "N = " << N << endl;
+    //cout << "A = " << A << endl;
 
-   C = A;
-   DataType::clear_stat();
-   merge_sort(C);
-   cout << "My Top Down Merge sort using N/2 buffer" << endl;
-   if(B == C)
-       DataType::print_stat();
-   else
-       cout << "failed" << endl;
+    // baseline using STD algo
+    DataType::clear_stat();
+    std::sort(B.begin(), B.end());
+    cout << "STL sort" << endl;
+    DataType::print_stat();
 
-   cout << "My practice quick sort" << endl;
-   auto D = A;
-   quick_sort(D);
-   if(B == D)
-       DataType::print_stat();
-   else
-       cout << "failed" << endl;
-   
+    DataType::clear_stat();
+    merge_sort_inplace(C);
+    cout << "My Inplace Merge Sort without Addtional Memory" << endl;
+    if(B == C)
+        DataType::print_stat();
+    else
+        cout << "failed" << endl;
 
-   vector<int> T;
-   srand(10);
-   for(size_t i = 0; i < 12; ++i)
-       T.push_back(rand() % 70);
-   cout << T << endl;
-   swap_range(T,0,2, 6);
-   //T = {50,      52,      55,      83,      34,      27,      49,      81,      14,      8,       89,      97};
-   cout << T << endl;
-   quick_sort(T);
-   cout << T << endl;
+    C = A;
+    DataType::clear_stat();
+    merge_sort(C);
+    cout << "My Top Down Merge sort using N/2 buffer" << endl;
+    if(B == C)
+        DataType::print_stat();
+    else
+        cout << "failed" << endl;
 
-   return 0;
+    cout << "My practice quick sort" << endl;
+    auto D = A;
+    quick_sort(D);
+    if(B == D)
+        DataType::print_stat();
+    else
+        cout << "failed" << endl;
+
+
+    vector<int> T;
+    srand(10);
+    for(size_t i = 0; i < 12; ++i)
+        T.push_back(rand() % 70);
+    cout << T << endl;
+    swap_range(T,0,2, 6);
+    cout << T << endl;
+    quick_sort(T);
+    cout << T << endl;
+
+    return 0;
 }
