@@ -165,6 +165,67 @@ template <typename T> void quick_sort(vector<T>& A)
 }
 
 ///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+//  heap sort
+
+inline int iParent(int i)
+{
+    return (i - 1);
+}
+inline int iLchild(int i)
+{
+    return 2*i + 1;
+}
+
+
+template <typename T> void sift_down(vector<T>& A, int start, int end)
+{
+    // repair the heap with broken root node [start -> end]
+    auto root = start;
+    while(true)
+    {
+    auto big = root; // index to swap with root i
+    const auto iL = iLchild(root);
+    if (iL <= end && A[big] < A[iL])
+        big  = iL;
+    if (iL + 1 <= end && A[big] < A[iL + 1])
+        big  = iL + 1;
+    if (big == root)
+        return;
+    swap(A[big], A[root]);
+    root = big;
+    }
+    
+
+}
+
+template <typename T> void heapify(vector<T>& A)
+{
+    // buttom up build a max heap
+    int i = A.size() - 1;
+    while (i >= 0)
+    {
+        sift_down(A, i, A.size() - 1);
+        --i;
+    }
+}
+
+
+
+
+template <typename T> void heap_sort(vector<T>& A)
+{
+    heapify(A);
+    int end = A.size() - 1;
+    while (end > 0)
+    {
+        swap(A[0], A[end]);
+        --end;
+        sift_down(A, 0, end);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////
 
 
 int main()
@@ -211,15 +272,25 @@ int main()
     else
         cout << "failed" << endl;
 
+    cout << "My practice heap sort" << endl;
+    auto E = A;
+    heap_sort(E);
+    if(B == E)
+        DataType::print_stat();
+    else
+        cout << "failed" << endl;
+
 
     vector<int> T;
     srand(10);
     for(size_t i = 0; i < 12; ++i)
-        T.push_back(rand() % 70);
+        T.push_back(rand() % 50);
     cout << T << endl;
     swap_range(T,0,2, 6);
     cout << T << endl;
-    quick_sort(T);
+    heap_sort(T);
+    cout << T << endl;
+    make_heap(T.begin(), T.end());
     cout << T << endl;
 
     return 0;
