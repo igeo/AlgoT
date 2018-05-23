@@ -228,6 +228,21 @@ template <typename T> void heap_sort(vector<T>& A)
 ///////////////////////////////////////////////////////////////////////
 
 
+template <typename T> void test_sort_algo(void f(vector<T>&), const vector<T>& A)
+{
+    auto B = A;
+    auto C = A;
+    std::sort(B.begin(), B.end());
+    DataType::clear_stat();
+    f(C);
+    if(B == C)
+        DataType::print_stat();
+    else
+        cout << "failed" << endl;
+    cout << endl;
+}
+
+
 int main()
 {
     const int N = 80000;
@@ -235,6 +250,7 @@ int main()
     std::vector<DataType> A(N);
     for (size_t i = 0; i < A.size(); ++i)
         A[i] = rand() % (2 * N);
+
 
     auto B = A;
     auto C = A;
@@ -244,41 +260,22 @@ int main()
     // baseline using STD algo
     DataType::clear_stat();
     std::sort(B.begin(), B.end());
-    cout << "STL sort" << endl;
+    cout << "STL sort" << endl << endl;;
     DataType::print_stat();
+    //test_sort_algo([](vector<DataType> a) { sort(a.begin(), a.end());}, A);
+    cout << endl;
 
-    DataType::clear_stat();
-    merge_sort_inplace(C);
     cout << "My Inplace Merge Sort without Addtional Memory" << endl;
-    if(B == C)
-        DataType::print_stat();
-    else
-        cout << "failed" << endl;
+    test_sort_algo(merge_sort_inplace<DataType>, A);
 
-    C = A;
-    DataType::clear_stat();
-    merge_sort(C);
     cout << "My Top Down Merge sort using N/2 buffer" << endl;
-    if(B == C)
-        DataType::print_stat();
-    else
-        cout << "failed" << endl;
+    test_sort_algo(merge_sort<DataType>, A);
 
     cout << "My practice quick sort" << endl;
-    auto D = A;
-    quick_sort(D);
-    if(B == D)
-        DataType::print_stat();
-    else
-        cout << "failed" << endl;
+    test_sort_algo(quick_sort<DataType>, A);
 
     cout << "My practice heap sort" << endl;
-    auto E = A;
-    heap_sort(E);
-    if(B == E)
-        DataType::print_stat();
-    else
-        cout << "failed" << endl;
+    test_sort_algo(heap_sort<DataType>, A);
 
 
     vector<int> T;
