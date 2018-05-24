@@ -43,4 +43,20 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const std::vect
     return os;
 }
 
+
+template <typename T, typename F> void test_sort_algo(F f, const std::vector<T>& A)
+{
+    auto B = A;
+    auto C = A;
+    std::sort(B.begin(), B.end());
+    T::clear_stat();
+    f(C);
+    if(B == C)
+        T::print_stat();
+    else
+        std::cout << "failed" << std::endl;
+    std::cout << std::endl;
+}
+
+
 #endif

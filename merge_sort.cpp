@@ -146,8 +146,10 @@ template <typename T> void quick_sort(vector<T>& A, int s, int e)
     int j = e + 1;
     while (true)
     {
-        do { --j ; } while(pivot < A[j]);
-        do { ++i; } while (A[i] < pivot);
+        do { --j ; }
+        while(pivot < A[j]);
+        do { ++i; }
+        while (A[i] < pivot);
         if(i < j)
             std::swap(A[i], A[j]);
         else
@@ -184,18 +186,18 @@ template <typename T> void sift_down(vector<T>& A, int start, int end)
     auto root = start;
     while(true)
     {
-    auto big = root; // index to swap with root i
-    const auto iL = iLchild(root);
-    if (iL <= end && A[big] < A[iL])
-        big  = iL;
-    if (iL + 1 <= end && A[big] < A[iL + 1])
-        big  = iL + 1;
-    if (big == root)
-        return;
-    swap(A[big], A[root]);
-    root = big;
+        auto big = root; // index to swap with root i
+        const auto iL = iLchild(root);
+        if (iL <= end && A[big] < A[iL])
+            big  = iL;
+        if (iL + 1 <= end && A[big] < A[iL + 1])
+            big  = iL + 1;
+        if (big == root)
+            return;
+        swap(A[big], A[root]);
+        root = big;
     }
-    
+
 
 }
 
@@ -228,42 +230,19 @@ template <typename T> void heap_sort(vector<T>& A)
 ///////////////////////////////////////////////////////////////////////
 
 
-template <typename T, typename F> void test_sort_algo(F f, const vector<T>& A)
-{
-    auto B = A;
-    auto C = A;
-    std::sort(B.begin(), B.end());
-    DataType::clear_stat();
-    f(C);
-    if(B == C)
-        DataType::print_stat();
-    else
-        cout << "failed" << endl;
-    cout << endl;
-}
-
-
 int main()
 {
     const int N = 80000;
+    cout << "N = " << N << endl;
+
     //srand(std::time(0));
     std::vector<DataType> A(N);
     for (size_t i = 0; i < A.size(); ++i)
         A[i] = rand() % (2 * N);
 
-
-    auto B = A;
-    auto C = A;
-    cout << "N = " << N << endl;
-    //cout << "A = " << A << endl;
-
-    // baseline using STD algo
-    DataType::clear_stat();
-    std::sort(B.begin(), B.end());
     cout << "STL sort" << endl << endl;;
     DataType::print_stat();
-    //test_sort_algo([](vector<DataType> a) { sort(a.begin(), a.end());}, A);
-    cout << endl;
+    test_sort_algo([](vector<DataType>& a) { sort(a.begin(), a.end());}, A);
 
     cout << "My Inplace Merge Sort without Addtional Memory" << endl;
     test_sort_algo(merge_sort_inplace<DataType>, A);
