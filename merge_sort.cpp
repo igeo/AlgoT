@@ -228,7 +228,7 @@ template <typename T> void heap_sort(vector<T>& A)
 ///////////////////////////////////////////////////////////////////////
 
 
-template <typename T> void test_sort_algo(void f(vector<T>&), const vector<T>& A)
+template <typename T, typename F> void test_sort_algo(F f, const vector<T>& A)
 {
     auto B = A;
     auto C = A;
@@ -268,11 +268,14 @@ int main()
     cout << "My Inplace Merge Sort without Addtional Memory" << endl;
     test_sort_algo(merge_sort_inplace<DataType>, A);
 
+
     cout << "My Top Down Merge sort using N/2 buffer" << endl;
-    test_sort_algo(merge_sort<DataType>, A);
+    void (*fp)(vector<DataType>&) = merge_sort<DataType>;
+    test_sort_algo(fp, A);
 
     cout << "My practice quick sort" << endl;
-    test_sort_algo(quick_sort<DataType>, A);
+    fp = quick_sort<DataType>;
+    test_sort_algo(fp, A);
 
     cout << "My practice heap sort" << endl;
     test_sort_algo(heap_sort<DataType>, A);
